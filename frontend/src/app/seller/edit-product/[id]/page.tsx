@@ -2,7 +2,8 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { API_URL } from "@/app/lib/api";
+import { API_URL } from "../../../lib/api";
+import ImageUpload from "../../../components/ImageUpload";
 
 export default function EditProductPage({
     params,
@@ -102,13 +103,7 @@ export default function EditProductPage({
                     className="border rounded p-2"
                     required
                 />
-                <input
-                    type="text"
-                    placeholder="Image URL"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="border rounded p-2"
-                />
+                <ImageUpload value={imageUrl} onChange={setImageUrl} />
 
                 {error && <p className="text-red-600">{error}</p>}
                 {success && <p className="text-green-600">Product updated! Redirecting...</p>}

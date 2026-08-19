@@ -3,7 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { getUserIdFromToken } from "../../lib/auth";
-import { API_URL } from "@/app/lib/api";
+import { API_URL } from "../../lib/api";
+import ImageUpload from "../../components/ImageUpload";
 
 type Category = {
     id: number;
@@ -126,13 +127,7 @@ export default function AddProductPage() {
                         className="border rounded p-2"
                         required
                     />
-                    <input
-                        type="text"
-                        placeholder="Image URL" 
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        className="border rounded p-2"
-                    />
+                    <ImageUpload value={imageUrl} onChange={setImageUrl}/>
                     <input 
                         type="number"
                         placeholder="Stock"

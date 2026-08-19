@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { getUserIdFromToken } from "../../lib/auth";
 import Link from "next/link";
-import { formatPrice } from "@/app/lib/format";
-import { API_URL } from "@/app/lib/api";
+import { formatPrice } from "../../lib/format";
+import { API_URL } from "../../lib/api";
 
 type Product = {
     id: number;

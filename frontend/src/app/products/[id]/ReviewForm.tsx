@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getUserIdFromToken } from "@/app/lib/auth";
+import { getUserIdFromToken } from "../../lib/auth";
+import { API_URL } from "../../lib/api";
 
 export default function ReviewForm({ productId}: {productId: number}) {
     const [rating, setRating] = useState(5);
@@ -22,7 +23,7 @@ export default function ReviewForm({ productId}: {productId: number}) {
             return;
         }
 
-        const res = await fetch("http://localhost:3000/reviews", {
+        const res = await fetch(`${API_URL}/reviews`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

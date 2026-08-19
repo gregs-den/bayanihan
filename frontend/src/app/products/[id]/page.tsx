@@ -1,6 +1,6 @@
 import ReviewForm from "./ReviewForm";
-import { formatPrice } from "@/app/lib/format";
-import { API_URL } from "@/app/lib/api";
+import { formatPrice } from "../../lib/format";
+import { API_URL } from "../../lib/api";
 
 async function getProduct(id: string) {
     const res = await fetch(`${API_URL}/products/${id}`, {

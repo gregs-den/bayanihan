@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatPrice } from "@/app/lib/format";
-import { API_URL } from "@/app/lib/api";
+import { formatPrice } from "../../lib/format";
+import { API_URL } from "../../lib/api";
 
 type OrderItem = {
     id: number;
