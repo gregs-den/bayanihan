@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const token = localStorage.getItem("token");
         setIsLoggedIn(!!token);
-    }, []);
+    }, [pathname]);
 
     function handleLogout() {
         localStorage.removeItem("token");
