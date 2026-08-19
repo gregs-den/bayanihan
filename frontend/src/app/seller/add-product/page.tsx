@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { getUserIdFromToken } from "../../lib/auth";
+import { API_URL } from "@/app/lib/api";
 
 type Category = {
     id: number;
@@ -34,8 +35,8 @@ export default function AddProductPage() {
             }
 
             const [categoriesRes, sellerRes] = await Promise.all([
-                fetch("http://localhost:3000/categories"),
-                fetch("http://localhost:3000/sellers"),
+                fetch(`${API_URL}/categories`),
+                fetch(`${API_URL}/sellers`),
             ]);
 
             const categoriesData = await categoriesRes.json();
@@ -66,7 +67,7 @@ export default function AddProductPage() {
             return;
         }
 
-        const res = await fetch("http://localhost:3000/products", {
+        const res = await fetch(`${API_URL}/products`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

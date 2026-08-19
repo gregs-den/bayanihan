@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_URL } from "../lib/api";
 
 export default function RegisterPage() {
     const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ export default function RegisterPage() {
         e.preventDefault();
         setError("");
 
-        const res = await fetch("http://localhost:3000/users/register", {
+        const res = await fetch(`${API_URL}/users/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json"},
             body: JSON.stringify({ email, password }),

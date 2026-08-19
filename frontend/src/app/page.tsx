@@ -1,7 +1,8 @@
 import Image from "next/image";
+import { API_URL } from "./lib/api";
 
 async function getCategories() {
-  const res = await fetch('http://localhost:3000/categories', {
+  const res = await fetch(`${API_URL}/categories`, {
     cache: 'no-store',
   });
   return res.json();

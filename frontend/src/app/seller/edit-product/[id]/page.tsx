@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import { API_URL } from "@/app/lib/api";
 
 export default function EditProductPage({
     params,
@@ -23,7 +24,7 @@ export default function EditProductPage({
 
     useEffect(() => {
         async function loadProduct() {
-            const res = await fetch(`http://localhost:3000/products/${id}`);
+            const res = await fetch(`${API_URL}/products/${id}`);
             const data = await res.json();
 
             setName(data.name);
@@ -47,7 +48,7 @@ export default function EditProductPage({
             return;
         }
 
-        const res = await fetch(`http://localhost:3000/products/${id}`,{
+        const res = await fetch(`${API_URL}/products/${id}`,{
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",

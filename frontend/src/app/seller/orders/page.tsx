@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatPrice } from "@/app/lib/format";
+import { API_URL } from "@/app/lib/api";
 
 type OrderItem = {
     id: number;
@@ -34,7 +35,7 @@ export default function SellerOrdersPage() {
                 return;
             }
             
-            const res = await fetch("http://localhost:3000/orders/seller/items", {
+            const res = await fetch(`${API_URL}/orders/seller/items`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getCart, removeFromCart, clearCart, CartItem } from "../lib/cart";
 import { getUserIdFromToken } from "../lib/auth";
 import { formatPrice } from "../lib/format";
+import { API_URL } from "../lib/api";
 
 type Product = {
     id: number;
@@ -27,7 +28,7 @@ export default function CartPage() {
 
             const lines: CartLine[] = await Promise.all(
                 cart.map(async (item) => {
-                    const res = await fetch(`http://localhost:3000/products/${item.productId}`);
+                    const res = await fetch(`${API_URL}/products/${item.productId}`);
                     const product = await res.json();
                     return { ...item, product };
                 })
@@ -61,7 +62,7 @@ export default function CartPage() {
             quantity: line.quantity,
         }));
 
-        const res = await fetch("http://localhost:3000/orders", {
+        const res = await fetch(`${API_URL}/orders`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

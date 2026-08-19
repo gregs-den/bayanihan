@@ -1,8 +1,9 @@
 import AddToCartButton from "./AddToCartButton";
 import { formatPrice } from "../lib/format";
+import { API_URL } from "../lib/api";
 
 async function getProducts() {
-    const res = await fetch('http://localhost:3000/products', {
+    const res = await fetch(`${API_URL}/products`, {
         cache: 'no-store'
     });
     return res.json();

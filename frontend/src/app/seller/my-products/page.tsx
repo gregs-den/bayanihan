@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getUserIdFromToken } from "../../lib/auth";
 import Link from "next/link";
 import { formatPrice } from "@/app/lib/format";
+import { API_URL } from "@/app/lib/api";
 
 type Product = {
     id: number;
@@ -29,8 +30,8 @@ export default function MyProductPage() {
             }
 
             const [productsRes, sellersRes] = await Promise.all([
-                fetch("http://localhost:3000/products"),
-                fetch("http://localhost:3000/sellers"),
+                fetch(`${API_URL}/products`),
+                fetch(`${API_URL}/sellers`),
             ])            
 
             const allProducts: Product[] = await productsRes.json();
@@ -59,7 +60,7 @@ export default function MyProductPage() {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res = await fetch(`http://localhost:3000/products/${productId}`, {
+        const res = await fetch(`${API_URL}/products/${productId}`, {
             method: "DELETE",
             headers: {
                 Authorization: `Bearer ${token}`,

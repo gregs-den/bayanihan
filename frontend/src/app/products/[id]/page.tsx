@@ -1,15 +1,16 @@
 import ReviewForm from "./ReviewForm";
 import { formatPrice } from "@/app/lib/format";
+import { API_URL } from "@/app/lib/api";
 
 async function getProduct(id: string) {
-    const res = await fetch(`http://localhost:3000/products/${id}`, {
+    const res = await fetch(`${API_URL}/products/${id}`, {
         cache: "no-store",
     });
     return res.json();    
 }
 
 async function getReviews() {
-    const res = await fetch("http://localhost:3000/reviews", {
+    const res = await fetch(`${API_URL}/reviews`, {
         cache: "no-store",
     });
     return res.json();    
