@@ -71,6 +71,7 @@ model User {
   quantity          Int
   priceAtPurchase   Decimal     @db.Decimal(10,2)
   commissionAmount  Decimal     @db.Decimal(10,2)
+  status            String      @default("pending")
   createdAt         DateTime 
  }
 
