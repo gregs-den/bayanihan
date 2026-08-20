@@ -43,8 +43,21 @@ export class ProductsService {
         });
     }
 
-    async findAll() {
-        return this.prisma.product.findMany();
+    async findAll(search?: string, categoryId?: number) {
+        const where: any = {};
+
+        if (search) {
+            where.name = {
+                contains: search,
+                mode: 'insensitive',
+            };
+        }
+
+        if (categoryId) {
+            where.categoryId = categoryId;
+        }
+
+        return this.prisma.product.findMany({ where });
     }
 
     async findOne(id: number) {

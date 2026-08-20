@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import AddToCartButton from "./AddToCartButton";
 import { formatPrice } from "../lib/format";
 import { API_URL } from "../lib/api";
@@ -18,13 +21,75 @@ type Product = {
     stock: number;
 };
 
-export default async function ProductsPage() {
-    const products: Product[] = await getProducts();
+type Category = {
+    id: number;
+    name: string;
+};
+
+export default function ProductsPage() {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [search, setSearch] = useState("");
+    const [categoryId, setCategoryId] = useState("");
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadCategories() {
+            const res = await fetch(`${API_URL}/categories`);
+            const data = await res.json();
+            setCategories(data);
+    }
+    loadCategories();
+}, []);
+
+    useEffect(() => {
+        async function loadProducts() {
+            setLoading(true);
+            const params = new URLSearchParams();
+            if (search) params.set("search", search);
+            if (categoryId) params.set("categoryId", categoryId);
+
+    const res = await fetch(`${API_URL}/products?${params.toString()}`, {
+        cache: "no-store",
+    });
+    const data = await res.json();
+        setProducts(data);
+        setLoading(false);
+    }
+    loadProducts();
+}, [search, categoryId]);
 
     return (
         <main className="min-h-screen p-8">
             <h1 className="text-3xl font-bold mb-6">Products</h1>
 
+            <div className="flex gap-4 mb-6">
+                <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="border rounded p-2 flex-1"
+                />
+                <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="border rounded p-2"
+                >
+                    <option value="">All categories</option>
+                    {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            
+            {loading ? (
+                <p>Loading...</p>
+            ) : products.length === 0 ? (
+                <p className="text-gray-500">No products found.</p>
+            ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {products.map((product) => (
                     <div key={product.id} className="border rounded-lg p-4">
@@ -36,6 +101,7 @@ export default async function ProductsPage() {
                     </div>
                 ))}
             </div>
+            )}
         </main>
-    )
+    );
 }
