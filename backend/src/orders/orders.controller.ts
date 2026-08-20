@@ -35,4 +35,14 @@ export class OrdersController {
   updateOrderStatus(@Param('id') id: string, @Body() body: { status: 'pending' | 'completed' | 'cancelled' }) {
     return this.ordersService.updateStatus(Number(id), body.status);
   }  
+
+  @UseGuards(AuthGuard)
+  @Patch('items/:itemId/status')
+  updateOrderItemStatus(
+    @Param('itemId') itemId: string,
+    @Body() body: { status: string},
+    @Req() request: any,
+  ) {
+    return this.ordersService.updateOrderItemStatus(Number(itemId), body.status, request.userId);
+  }
 } 

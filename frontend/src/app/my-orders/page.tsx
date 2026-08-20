@@ -9,6 +9,7 @@ type OrderItem = {
     productId: number;
     quantity: number;
     priceAtPurchase: string;
+    status: string;
 }
 
 type Order = {
@@ -74,11 +75,17 @@ export default function MyOrdersPage() {
                             </div>
                             <p className="text-gray-500 text-sm mb-2">
                                 {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
-                            <p className="text-sm text-gray-600 mb-2">
-                                {order.orderItems.length} item(s)
-                            </p>
-                            <p className="font-bold"> Php {formatPrice(order.totalAmount)}</p>
+                            </p>                            
+                            <p className="font-bold mb-2"> Php {formatPrice(order.totalAmount)}</p>
+                            
+                            <div className="flex flex-col gap-1 mt-2 border-t pt-2">
+                                {order.orderItems.map((item) => (
+                                    <div key={item.id} className="flex justify-between text-sm">
+                                        <span>Item #{item.productId} * {item.quantity}</span>
+                                        <span className="capitalize text-gray-600">{item.status}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ))}
                 </div>

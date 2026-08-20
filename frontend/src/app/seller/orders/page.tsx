@@ -10,6 +10,7 @@ type OrderItem = {
     quantity: number;
     priceAtPurchase: string;
     commissionAmount: string;
+    status: string;
     order: {
         id: number;
         status: string;
@@ -56,6 +57,26 @@ export default function SellerOrdersPage() {
         loadItems();
     }, []);
 
+    async function handleStatusChange(itemId:number, newStatus: string)  {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        
+        const res = await fetch(`${API_URL}/orders/items/${itemId}/status`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ status: newStatus }),
+        });
+
+        if (res.ok) {
+            setItems((prev) =>
+                prev.map((item) => (item.id === itemId ? { ...item, status: newStatus } : item))
+            );
+        }
+    }
+
     if (loading) return <main className="p-8">Loading...</main>;
     if (error) return <main className="p-8 text-red-600">{error}</main>;
 
@@ -73,9 +94,15 @@ export default function SellerOrdersPage() {
                                 <p className="font-semibold">
                                     Order #{item.order.id} - {item.product.name}
                                 </p>
-                                <span className="text-sm px-2 py-1 rounded bg-gray-100 capitalize">
-                                    {item.order.status}
-                                </span>
+                                <select 
+                                    value={item.status}
+                                    onChange={(e) => handleStatusChange(item.id, e.target.value)}
+                                    className="text-sm px-2 py-1 rounded border capitalize"
+                                >
+                                    <option value="pending">Pending</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
                             </div>
                             <p className="text-gray-500 text-sm mb-2">
                                 {new Date(item.order.createdAt).toLocaleDateString()}

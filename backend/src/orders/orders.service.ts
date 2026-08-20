@@ -124,4 +124,24 @@ export class OrdersService {
             orderBy: { createdAt: 'desc'},
         });
     }
+
+    async updateOrderItemStatus(itemId: number, status: string, requestingUserId: number) {
+        const item = await this.prisma.orderItem.findUnique({
+            where: { id: itemId },
+            include: { seller: true },
+        });
+
+        if (!item) {
+            throw new NotFoundException('Order item not found');
+        }
+
+        if (item.seller.userId !== requestingUserId) {
+            throw new ForbiddenException('You can only update your own order items');
+        }
+
+        return this.prisma.orderItem.update({
+            where: { id: itemId },
+            data: { status },
+        });
+    }
 }
