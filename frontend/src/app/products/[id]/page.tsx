@@ -1,6 +1,7 @@
 import ReviewForm from "./ReviewForm";
 import { formatPrice } from "../../lib/format";
 import { API_URL } from "../../lib/api";
+import Link from "next/link";
 
 async function getProduct(id: string) {
     const res = await fetch(`${API_URL}/products/${id}`, {
@@ -39,6 +40,12 @@ export default async function ProductDetailPage({
             <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
             <p className="text-gray-600 mb-4">{product.description}</p>
             <p className="text-xl font-bold mb-6">Php {formatPrice(product.price)}</p>
+            <Link
+                href={`/sellers/${product.sellerId}`}
+                className="text-blue-600 hover:underline text-sm mb-6 inline-block"
+            >
+                Visit Store
+            </Link>
 
             <h2 className="text-xl font-semibold mb-3">Reviews</h2>
             <div className="flex flex-col gap-3">

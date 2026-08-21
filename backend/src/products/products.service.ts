@@ -43,7 +43,7 @@ export class ProductsService {
         });
     }
 
-    async findAll(search?: string, categoryId?: number) {
+    async findAll(search?: string, categoryId?: number, sellerId?: number) {
         const where: any = {};
 
         if (search) {
@@ -55,6 +55,10 @@ export class ProductsService {
 
         if (categoryId) {
             where.categoryId = categoryId;
+        }
+
+        if (sellerId) {
+            where.sellerId = sellerId;
         }
 
         return this.prisma.product.findMany({ where });

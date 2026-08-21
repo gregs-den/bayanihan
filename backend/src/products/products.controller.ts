@@ -14,8 +14,16 @@ export class ProductsController {
   }
 
   @Get()
-  findAll(@Query('search') search?: string, @Query('categoryId') categoryId?: string) {
-    return this.productsService.findAll(search, categoryId ? Number(categoryId) : undefined);
+  findAll(
+    @Query('search') search?: string, 
+    @Query('categoryId') categoryId?: string,
+    @Query('sellerId') sellerId?: string,
+  ) {
+    return this.productsService.findAll(
+      search, 
+      categoryId ? Number(categoryId) : undefined,
+      sellerId ? Number(sellerId) : undefined,
+    );
   }
 
   @Get(':id')
