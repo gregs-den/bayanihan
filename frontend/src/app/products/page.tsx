@@ -19,6 +19,8 @@ type Product = {
     price: string;
     imageUrl: string;
     stock: number;
+    averageRating: number | null;
+    reviewCount: number;
 };
 
 type Category = {
@@ -97,6 +99,13 @@ export default function ProductsPage() {
                         <p className="text-gray-600 mb-2">{product.description}</p>
                         <p className="text-lg font-bold">Php {formatPrice(product.price)}</p>
                         <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                        {product.reviewCount > 0 ? (
+                            <p className="text-sm text-yellow-600">
+                                ⭐ {product.averageRating?.toFixed(1)} ({product.reviewCount} review{product.reviewCount !== 1? "s" : ""})
+                            </p>
+                        ) : (
+                            <p className="text-sm text-gray-400">No reviews yet</p>
+                        )}
                         <AddToCartButton productId={product.id}/>
                     </div>
                 ))}

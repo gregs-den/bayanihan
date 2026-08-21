@@ -61,7 +61,21 @@ export class ProductsService {
             where.sellerId = sellerId;
         }
 
-        return this.prisma.product.findMany({ where });
+        const products = await this.prisma.product.findMany({
+            where,
+            include: { reviews: true },
+        });
+
+        return products.map((product) => {
+            const ratings = product.reviews.map((r) => r.rating);
+            const averageRating =
+                ratings.length > 0
+                ? ratings.reduce((sum, r) => sum + r, 0) / + ratings.length
+                : null;
+
+            const { reviews, ...rest } = product;
+            return { ...rest, averageRating, reviewCount: ratings.length };
+        });        
     }
 
     async findOne(id: number) {
