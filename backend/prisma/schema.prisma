@@ -41,7 +41,8 @@ model User {
   name              String
   description       String?
   price             Decimal     @db.Decimal(10,2)
-  imageUrl          String?
+  imageUrl          String?     
+  imageUrls         String[]    @default([])
   categoryId        Int
   category          Category    @relation(fields: [categoryId], references: [id])
   stock             Int         @default(0)

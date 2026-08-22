@@ -16,11 +16,11 @@ type Product = {
     id: number
     name: string;
     description: string;
-    price: string;
-    imageUrl: string;
+    price: string;    
     stock: number;
     averageRating: number | null;
     reviewCount: number;
+    imageUrls: string[];
 };
 
 type Category = {
@@ -95,6 +95,17 @@ export default function ProductsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {products.map((product) => (
                     <div key={product.id} className="border rounded-lg p-4">
+                        {product.imageUrls && product.imageUrls.length > 0 ? (
+                            <img
+                                src={product.imageUrls[0]}
+                                alt={product.name}
+                                className="w-full h-40 object-cover rounded mb-3"
+                            />
+                        ) : (
+                            <div className="w-full h-40 bg-gray-100 rounded mb-3 flex items-center text-gray-400 text-sm">
+                                No image
+                            </div>
+                        )}
                         <h2 className="text-xl font-semibold">{product.name}</h2>
                         <p className="text-gray-600 mb-2">{product.description}</p>
                         <p className="text-lg font-bold">Php {formatPrice(product.price)}</p>

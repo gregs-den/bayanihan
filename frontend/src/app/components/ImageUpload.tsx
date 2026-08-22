@@ -4,40 +4,48 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 
 type Props = {
-    value: string;
-    onChange: (url: string) => void;
+    value: string[];
+    onChange: (url: string[]) => void;
 };
 
 export default function ImageUpload({ value, onChange }: Props) {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState("");
 
-    async function handleFileChange(e:React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setUploading(true);
         setError("");
 
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36)}.${fileExt}`;
+        const newUrls: string[] = [];
 
-        const { error: uploadError } = await supabase.storage
-            .from("product-images")
-            .upload(fileName, file);
-            
-        if (uploadError) {
-            setError("Upload failed: " + uploadError.message);
-            setUploading(false);
-            return;
+        for (const file of Array.from(files)) {
+            const fileExt = file.name.split(".").pop();    
+            const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("product-images")
+                .upload(fileName, file);
+
+            if (uploadError) {
+                setError("Upload failed: " + uploadError.message);
+                continue;
+            }
+            const { data } = supabase.storage
+                .from("product-images")
+                .getPublicUrl(fileName);
+
+            newUrls.push(data.publicUrl);
         }
 
-        const { data } = supabase.storage
-            .from("product-images")
-            .getPublicUrl(fileName);
-
-        onChange(data.publicUrl);
+        onChange([...value, ...newUrls]);
         setUploading(false);        
+    }
+
+    function handleRemove(url: string) {
+        onChange(value.filter((u) => u !== url));
     }
 
     return (
@@ -45,13 +53,31 @@ export default function ImageUpload({ value, onChange }: Props) {
             <input
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleFileChange}
                 className="border rounded p-2"
             />
             {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
             {error && <p className="text-sm text-red-600">{error}</p>}
-            {value && (
-                <img src={value} alt="Preview" className="w-32 h-32 object-cover rounded border"/>
+            {value.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                    {value.map((url) => (
+                        <div key={url} className="relative">
+                            <img   
+                                src={url}
+                                alt="Preview"
+                                className="w-24 h-24 object-cover rounded border"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => handleRemove(url)}
+                                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs"
+                            >
+                                x
+                            </button>
+                        </div>
+                    ))}
+                </div>
             )}
         </div>
     );

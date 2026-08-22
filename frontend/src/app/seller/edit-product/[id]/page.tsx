@@ -20,7 +20,7 @@ export default function EditProductPage({
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
-    const [imageUrl, setImageUrl] = useState("");
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [stock, setStock] = useState("");
 
     useEffect(() => {
@@ -31,7 +31,7 @@ export default function EditProductPage({
             setName(data.name);
             setDescription(data.description);
             setPrice(data.price);
-            setImageUrl(data.imageUrl);
+            setImageUrls(data.imageUrls || []);
             setStock(data.stock);
             setLoading(false);            
         }
@@ -59,7 +59,7 @@ export default function EditProductPage({
                 name,
                 description,
                 price: Number(price),
-                imageUrl,
+                imageUrls,
                 stock: Number(stock),
             }),        
         });
@@ -103,7 +103,7 @@ export default function EditProductPage({
                     className="border rounded p-2"
                     required
                 />
-                <ImageUpload value={imageUrl} onChange={setImageUrl} />
+                <ImageUpload value={imageUrls} onChange={setImageUrls} />
 
                 {error && <p className="text-red-600">{error}</p>}
                 {success && <p className="text-green-600">Product updated! Redirecting...</p>}

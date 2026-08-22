@@ -37,6 +37,18 @@ export default async function ProductDetailPage({
     
     return (
         <main className="min-h-screen p-8 max-w-2xl mx-auto">
+            {product.imageUrls && product.imageUrls.length > 0 && (
+                <div className="flex gap-2 mb-4 overflow-x-auto">
+                    {product.imageUrls.map((url: string, index:number) => (
+                        <img
+                            key={index}
+                            src={url}
+                            alt={`${product.name} image ${index + 1}`}
+                            className="w-32 h-32 object-cover rounded border flex-shrink-0"
+                        />
+                    ))}
+                </div>
+            )}
             <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
             <p className="text-gray-600 mb-4">{product.description}</p>
             <p className="text-xl font-bold mb-6">Php {formatPrice(product.price)}</p>

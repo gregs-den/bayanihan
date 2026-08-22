@@ -11,7 +11,7 @@ export class ProductsService {
         name: string;
         description?: string;
         price: number;
-        imageUrl?: string;
+        imageUrls?: string[];
         stock: number;
     }) {
         const seller = await this.prisma.seller.findUnique({
@@ -37,7 +37,7 @@ export class ProductsService {
                 name: data.name,
                 description: data.description,
                 price: data.price,
-                imageUrl: data.imageUrl,
+                imageUrls: data.imageUrls,
                 stock: data.stock,
             },
         });
@@ -94,7 +94,7 @@ export class ProductsService {
         name: string;
         description: string;
         price: number;
-        imageUrl: string;
+        imageUrls: string[];
         stock: number;
     }>, requestingUserId: number) {
         const product = await this.findOne(id);

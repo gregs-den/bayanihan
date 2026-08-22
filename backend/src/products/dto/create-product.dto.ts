@@ -1,4 +1,4 @@
-import { IsInt, IsString, IsNotEmpty, IsNumber, IsPositive, IsOptional } from 'class-validator';
+import { IsInt, IsString, IsNotEmpty, IsNumber, IsPositive, IsOptional, IsAlpha, IsArray } from 'class-validator';
 
 export class CreateProductDto {
     @IsInt()
@@ -19,9 +19,10 @@ export class CreateProductDto {
     @IsPositive()
     price!: number;
 
-    @IsString()
+    @IsArray()
+    @IsString({ each: true })
     @IsOptional()
-    imageUrl?: string;
+    imageUrls?: string[];
 
     @IsInt()
     @IsPositive()

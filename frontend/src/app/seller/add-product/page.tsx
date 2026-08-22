@@ -22,7 +22,7 @@ export default function AddProductPage() {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
-    const [imageUrl, setImageUrl] = useState("");
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [stock, setStock] = useState("");
     const [categoryId, setCategoryId] = useState("");
 
@@ -80,7 +80,7 @@ export default function AddProductPage() {
                 name,
                 description,
                 price: Number(price),
-                imageUrl,
+                imageUrls,
                 stock: Number(stock),
             }),
         });
@@ -127,7 +127,7 @@ export default function AddProductPage() {
                         className="border rounded p-2"
                         required
                     />
-                    <ImageUpload value={imageUrl} onChange={setImageUrl}/>
+                    <ImageUpload value={imageUrls} onChange={setImageUrls}/>
                     <input 
                         type="number"
                         placeholder="Stock"
