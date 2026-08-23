@@ -62,7 +62,7 @@ export default function CartPage() {
             quantity: line.quantity,
         }));
 
-        const res = await fetch(`${API_URL}/orders`, {
+        const res = await fetch(`${API_URL}/payments/checkout`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -77,9 +77,9 @@ export default function CartPage() {
             return;
         }
 
-        clearCart();
-        setSuccess(true);
-        setTimeout(() => router.push("/"), 2000);
+        const data = await res.json();
+        window.location.href = data.checkoutUrl;
+
     }
 
     if (loading) return <main className="p-8">Loading...</main>;
