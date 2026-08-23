@@ -2,24 +2,29 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, Forbi
 import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
     constructor(private jwtService: JwtService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
         const authHeader = request.headers['authorization'];
 
-        if (!authHeader){
+        if (!authHeader) {
             throw new UnauthorizedException('No token provided');
         }
 
-        const token = authHeader.split(' ')[1]; // "Bearer <token>"
+        const token = authHeader.split(' ')[1];
 
         try {
             const payload = await this.jwtService.verifyAsync(token, {
                 secret: process.env.JWT_SECRET,
-            });
-            request.userId = payload.userId; // attach to request for later use
+            }); 
+
+            if (!payload.isAdmin) {
+                throw new ForbiddenException('Admin access required');
+            }
+
+            request.userId = payload.userId;
             return true;
         } catch (err) {
             if (err instanceof ForbiddenException) throw err;
@@ -27,4 +32,3 @@ export class AuthGuard implements CanActivate {
         }
     }
 }
- 

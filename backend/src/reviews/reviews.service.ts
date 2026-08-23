@@ -57,4 +57,12 @@ export class ReviewsService {
         where: { id },
     });
   }
+
+  async adminRemove(id: number) {
+    await this.findOne(id);
+
+    return this.prismaService.review.delete({
+      where: { id },
+    });
+  }
 }

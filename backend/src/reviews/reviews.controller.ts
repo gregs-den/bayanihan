@@ -1,9 +1,8 @@
-import { Controller, Post, Body, Get, Delete,Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete,Param, UseGuards, Req } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
-import { UseGuards, Req } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { request } from 'http';
+import { AuthGuard } from '../auth/auth.guard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -28,6 +27,12 @@ export class ReviewsController {
   @Delete(':id')
   remove(@Param('id') id: string, @Req() request: any) {
     return this.reviewsService.remove(Number(id), request.userId);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('admin/:id')
+  adminRemove(@Param('id') id:string) {
+    return this.reviewsService.adminRemove(Number(id));
   }
 
 }

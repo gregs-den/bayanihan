@@ -3,15 +3,18 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { isAdminFromToken } from "../lib/auth";
 
 export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
 
     useEffect(() => {
         const token = localStorage.getItem("token");
         setIsLoggedIn(!!token);
+        setIsAdmin(isAdminFromToken());
     }, [pathname]);
 
     function handleLogout() {
@@ -49,7 +52,12 @@ export default function Navbar() {
                     </Link> 
                     <Link href="/seller/orders" className="font-semibold hover:underline">
                         Seller Orders
-                    </Link>                 
+                    </Link> 
+                    {isAdmin && (
+                        <Link href="/admin" className="font-semibold hover:underline text-red-600">
+                            Admin
+                        </Link>
+                    )}                
                     <button onClick={handleLogout} className="font-semibold hover:underline">
                         Logout
                     </button>

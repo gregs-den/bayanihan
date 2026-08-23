@@ -25,7 +25,7 @@ export class UsersService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const token = await this.jwtService.signAsync({ userId: user.id})
+        const token = await this.jwtService.signAsync({ userId: user.id, isAdmin: user.isAdmin });
 
         return { message: 'Login successful', accessToken: token };
     }
@@ -70,6 +70,17 @@ export class UsersService {
             select: {
                 id: true,
                 email: true,
+                createdAt: true,
+            },
+        });
+    }
+
+    async findAllAdmin() {
+        return this.prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                isAdmin: true,
                 createdAt: true,
             },
         });

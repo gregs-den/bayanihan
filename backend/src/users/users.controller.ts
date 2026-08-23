@@ -2,7 +2,8 @@ import { Controller, Get, Post, Body, Delete, Param, UseGuards, Req } from '@nes
 import { UsersService } from './users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('users')
 export class UsersController {
@@ -18,6 +19,12 @@ export class UsersController {
         return this.usersService.login(body.email, body.password);
     }
 
+    @UseGuards(AdminGuard)
+    @Get('admin/all')
+    findAllAdmin() {
+        return this.usersService.findAllAdmin();
+    }
+
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.usersService.findOne(Number(id));
@@ -27,7 +34,5 @@ export class UsersController {
     @Delete(':id')
     remove(@Param('id') id: string, @Req() request: any) {
         return this.usersService.remove(Number(id), request.userId);
-    }
-
-
+    }    
 }
