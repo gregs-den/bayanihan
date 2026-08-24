@@ -2,10 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { metadata } from 'reflect-metadata/no-conflict';
 import * as crypto from 'crypto';
+import { OrdersService } from '../orders/orders.service';
 
 @Injectable()
 export class PaymentsService {
-    constructor (private readonly prisma: PrismaService) {}
+    constructor (
+        private readonly prisma: PrismaService,
+        private readonly ordersService: OrdersService,) {}
     
     async createCheckoutSession(buyerId: number, items: { productId: number, quantity: number }[]) {
         const lineItems: { name: string; amount: number; currency: string; quantity: number }[] = [];
@@ -84,60 +87,6 @@ export class PaymentsService {
     }
 
     async handlePaymentSuccess(buyerId: number, items: { productId: number; quantity: number}[]) {
-        const orderItemsData: {
-            productId: number;
-            sellerId: number;
-            quantity: number;
-            priceAtPurchase: number;
-            commissionAmount: number;
-        }[] = [];
-
-        let totalAmount = 0;
-        const COMMISSION_RATE = 0.1;
-
-        for (const item of items) {
-            const product = await this.prisma.product.findUnique({
-                where: { id: item.productId },
-            });
-
-            if (!product) continue;
-
-            const price = Number(product.price);
-            const lineTotal = price * item.quantity;
-            const commission = lineTotal * COMMISSION_RATE;
-
-            totalAmount += lineTotal;
-
-            orderItemsData.push({
-                productId: product.id,
-                sellerId: product.sellerId,
-                quantity: item.quantity,
-                priceAtPurchase: price,
-                commissionAmount: commission,
-            });
-        }    
-
-        return this.prisma.$transaction(async (tx) => {
-            const order = await tx.order.create({
-                data: {
-                    buyerId,
-                    totalAmount,
-                    status: 'pending',
-                },
-            });
-
-            for (const itemData of orderItemsData) {
-                await tx.orderItem.create({
-                    data: {
-                        orderId: order.id,
-                        ...itemData,
-                        status: 'pending',
-                        createdAt: new Date(),
-                    },
-                });
-            }
-
-            return order;
-        });
+       return this.ordersService.createOrder(buyerId, items);
     }
 }
