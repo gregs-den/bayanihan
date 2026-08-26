@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -61,5 +61,28 @@ export class SellersService {
         return this.prisma.seller.delete({
             where: { id },
         });
+    }
+
+    async adminRemove(id: number) {
+        await this.findOne(id);
+
+        try {
+            return await this.prisma.$transaction(async (tx) => {
+                await tx.product.deleteMany({
+                    where: { sellerId: id },
+                });
+
+                return tx.seller.delete({
+               where: { id },
+                });
+            });        
+        } catch (error: any) {
+            if (error.code === 'P2003') {
+                throw new BadRequestException(
+                    'Cannot delete this seller: they have products with existing orders. Consider deactivating instead.',
+                );
+            }
+            throw error;
+        }
     }
 }

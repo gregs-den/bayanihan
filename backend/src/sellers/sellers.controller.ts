@@ -2,7 +2,8 @@ import { Controller, Get, Post, Body, Patch, Delete, Param } from '@nestjs/commo
 import { SellersService } from './sellers.service';
 import { CreateSellerDto } from './dto/create-seller.dto';
 import { UseGuards, Req } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('sellers')
 export class SellersController {
@@ -27,6 +28,12 @@ export class SellersController {
     @Patch(':id')
     update(@Param('id') id: string, @Body() body: { storeName: string }, @Req() request: any) {
         return this.sellersService.update(Number(id), body.storeName, request.userId);
+    }
+
+    @UseGuards(AdminGuard)
+    @Delete('admin/:id')
+    adminRemove(@Param('id') id:string) {
+        return this.sellersService.adminRemove(Number(id));
     }
 
     @UseGuards(AuthGuard)

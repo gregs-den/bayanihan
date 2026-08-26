@@ -16,12 +16,19 @@ type Category = {
     name: string;
 };
 
+type Seller = {
+    id: number;
+    userId: number;
+    storeName: string;
+};
+
 export default function AdminPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [categories, setCategories] = useState<Category[]>([]);
     const [newCategoryName, setNewCategoryName] = useState("");
+    const [sellers, setSellers] = useState<Seller[]>([]);
 
     useEffect(() => {
         async function loadUsers() {
@@ -54,8 +61,15 @@ export default function AdminPage() {
             setCategories(data);
         }
 
+        async function loadSellers() {
+            const res = await fetch(`${API_URL}/sellers`);
+            const data = await res.json();
+            setSellers(data);
+        }
+
         loadUsers();
         loadCategories();
+        loadSellers();
     }, []);
 
     async function handleCreateCategory(e: React.FormEvent) {
@@ -96,6 +110,27 @@ export default function AdminPage() {
         }
     }
 
+    async function handleDeleteSeller(id:number) {
+        const confirmed = confirm("Delete this seller? This will not delete their products.");
+        if (!confirmed) return;
+        
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`${API_URL}/sellers/admin/${id}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (res.ok) {
+            setSellers((prev) => prev.filter((s) => s.id !== id));""
+        } else {
+            const data = await res.json();
+            alert(data.message || "Failed to delete seller.");
+        }
+    }
+
     if (loading) return <main className="p-8">Loading...</main>;
     if (error) return <main className="p-8 text-red-600">{error}</main>;
 
@@ -126,21 +161,21 @@ export default function AdminPage() {
 
             <h2 className="text-2xl font-bold mt-10 mb-4">Manage Categories</h2>
 
-                    <form onSubmit={handleCreateCategory} className="flex gap-2 mb-4">
-                        <input
-                            type="text"
-                            placeholder="New category name"
-                            value={newCategoryName}
-                            onChange={(e) => setNewCategoryName(e.target.value)}
-                            className="border rounded p-2 flex-1"
-                            required
-                        />
-                        <button type="submit" className="bg-black text-white rounded px-4 py-2">
-                            Add
-                        </button>
-                    </form>
+                <form onSubmit={handleCreateCategory} className="flex gap-2 mb-4">
+                    <input
+                        type="text"
+                        placeholder="New category name"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        className="border rounded p-2 flex-1"
+                        required
+                    />
+                    <button type="submit" className="bg-black text-white rounded px-4 py-2">
+                        Add
+                    </button>
+                </form>
 
-                    <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
                         {categories.map((category) => (
                             <div key={category.id} className="flex justify-between items-center border rounded p-2">
                                 <span>{category.name}</span>
@@ -152,7 +187,23 @@ export default function AdminPage() {
                                 </button>
                             </div>
                         ))}
-                    </div>
+                </div>
+
+            <h2 className="text-2xl font-bold mt-10 mb-4">Manage Sellers</h2>
+                <div className="flex flex-col gap-2">
+                    {sellers.map((seller) => (
+                        <div key={seller.id} className="flex justify-between items-center border rounded p-2">
+                            <span>{seller.storeName} (user id: {seller.userId})</span>
+                            <button
+                                onClick={() => handleDeleteSeller(seller.id)}
+                                className="text-red-600 hover:underline text-sm"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                
         </main>
     );
 }
