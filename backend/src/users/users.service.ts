@@ -74,7 +74,7 @@ export class UsersService {
         }
 
         try {
-            return this.prisma.user.delete({
+            return await this.prisma.user.delete({
                 where: { id },
             });
         } catch (error: any) {
