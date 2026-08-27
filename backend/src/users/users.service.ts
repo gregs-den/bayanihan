@@ -73,9 +73,18 @@ export class UsersService {
             }
         }
 
-        return this.prisma.user.delete({
-            where: { id },
-        });
+        try {
+            return this.prisma.user.delete({
+                where: { id },
+            });
+        } catch (error: any) {
+            if (error.code === 'P2003') {
+                throw new BadRequestException(
+                    'Cannot delete this user: they have a seller profile with existing products or orders. Delete their seller account first.',
+                );
+            }
+            throw error;
+        }
     }
     
     async register(email: string, password: string) {
