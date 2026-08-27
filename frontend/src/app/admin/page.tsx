@@ -124,10 +124,54 @@ export default function AdminPage() {
         });
 
         if (res.ok) {
-            setSellers((prev) => prev.filter((s) => s.id !== id));""
+            setSellers((prev) => prev.filter((s) => s.id !== id));
+            alert("Seller deleted successfully.");
         } else {
             const data = await res.json();
             alert(data.message || "Failed to delete seller.");
+        }
+    }
+
+    async function handleToggleAdmin(id:number, currentStatus: boolean) {
+        const token = localStorage.getItem("token");
+        
+        const res = await fetch(`${API_URL}/users/admin/${id}/toggle-admin`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ isAdmin: !currentStatus }),
+        });
+
+        if (res.ok) {
+            const updated = await res.json();
+            setUsers((prev) => prev.map((u) => (u.id === id ? updated : u)));
+        } else {
+            const data = await res.json();
+            alert(data.message || "Failed to update admin status.");
+        }
+    }
+
+    async function handleDeleteUser(id: number) {
+        const confirmed = confirm("Delete this user? this cannot be undone.");
+        if (!confirmed) return;
+        
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`${API_URL}/users/admin/${id}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (res.ok) {
+            setUsers((prev) => prev.filter((u) => u.id !== id));
+            alert("User deleted successfully.");
+        } else {
+            const data = await res.json();
+            alert(data.message || "Failed to delete user.");
         }
     }
 
@@ -145,6 +189,7 @@ export default function AdminPage() {
                         <th className="p-2">Email</th>
                         <th className="p-2">Admin</th>
                         <th className="p-2">Joined</th>
+                        <th className="p-2">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -154,6 +199,20 @@ export default function AdminPage() {
                             <td className="p-2">{user.email}</td>
                             <td className="p-2">{user.isAdmin ? "Yes" : "No"}</td>
                             <td className="p-2">{new Date(user.createdAt).toLocaleDateString()}</td>
+                            <td className="p-2 flex gap-3">
+                                <button
+                                    onClick={() => handleToggleAdmin(user.id, user.isAdmin)}
+                                    className="text-blue-600 hover:underline text-sm"
+                                >
+                                    {user.isAdmin ? "Demote" : "Promote"}
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteUser(user.id)}
+                                    className="text-red-600 hover:underline text-sm"
+                                >
+                                    Delete
+                                </button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

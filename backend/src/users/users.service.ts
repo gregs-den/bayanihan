@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -36,6 +36,7 @@ export class UsersService {
             select: {
                 id: true,
                 email: true,
+                isAdmin: true,
                 createdAt: true,
             },
         });
@@ -58,6 +59,24 @@ export class UsersService {
             where: { id },
         });
     } 
+
+    async adminRemove(id: number) {
+        const user = await this.findOne(id);
+
+        if (user.isAdmin) {
+            const adminCount = await this.prisma.user.count({
+                where: { isAdmin: true },
+            });
+
+            if (adminCount <= 1 ){
+                throw new BadRequestException('Cannot delete the last admin account.');
+            }
+        }
+
+        return this.prisma.user.delete({
+            where: { id },
+        });
+    }
     
     async register(email: string, password: string) {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -77,6 +96,31 @@ export class UsersService {
 
     async findAllAdmin() {
         return this.prisma.user.findMany({
+            select: {
+                id: true,
+                email: true,
+                isAdmin: true,
+                createdAt: true,
+            },
+        });
+    }
+
+    async toggleAdmin(id: number, isAdmin: boolean) {
+        const user = await this.findOne(id);
+
+        if (!isAdmin) {
+            const adminCount = await this.prisma.user.count({
+                where: { isAdmin: true },
+            });
+
+            if (adminCount <= 1) {
+                throw new BadRequestException('Cannot remove the last admin account.');
+            }
+        }
+
+        return this.prisma.user.update({
+            where: { id },
+            data: { isAdmin },
             select: {
                 id: true,
                 email: true,

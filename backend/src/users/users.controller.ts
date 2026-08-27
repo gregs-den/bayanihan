@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Delete, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, UseGuards, Req, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -23,6 +23,18 @@ export class UsersController {
     @Get('admin/all')
     findAllAdmin() {
         return this.usersService.findAllAdmin();
+    }
+
+    @UseGuards(AdminGuard)
+    @Patch('admin/:id/toggle-admin')
+    toggleAdmin(@Param('id') id:string, @Body() body: { isAdmin: boolean }) {
+        return this.usersService.toggleAdmin(Number(id), body.isAdmin);
+    }
+
+    @UseGuards(AdminGuard)
+    @Delete('admin/:id')
+    adminRemove(@Param('id') id: string) {
+        return this.usersService.adminRemove(Number(id));
     }
 
     @Get(':id')
