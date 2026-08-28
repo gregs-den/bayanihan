@@ -20,6 +20,7 @@ type Seller = {
     id: number;
     userId: number;
     storeName: string;
+    isActive: boolean;
 };
 
 export default function AdminPage() {
@@ -153,6 +154,28 @@ export default function AdminPage() {
         }
     }
 
+    async function handleToggleActive(id: number, currentStatus: boolean) {
+        const token = localStorage.getItem("token");
+        
+        const res = await fetch(`${API_URL}/sellers/admin/${id}/toggle-active`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ isActive: !currentStatus }),
+        });
+
+        if (res.ok) {
+            const updated = await res.json();
+            setSellers((prev) => prev.map((s) => (s.id === id ? updated : s)));
+            alert(updated.isActive ? "Seller activate." : "Seller deactivated.");
+        } else {
+            const data = await res.json();
+            alert(data.message || "Failed to update seller status.");
+        }
+    }
+
     async function handleDeleteUser(id: number) {
         const confirmed = confirm("Delete this user? this cannot be undone.");
         if (!confirmed) return;
@@ -252,13 +275,24 @@ export default function AdminPage() {
                 <div className="flex flex-col gap-2">
                     {sellers.map((seller) => (
                         <div key={seller.id} className="flex justify-between items-center border rounded p-2">
-                            <span>{seller.storeName} (user id: {seller.userId})</span>
-                            <button
-                                onClick={() => handleDeleteSeller(seller.id)}
-                                className="text-red-600 hover:underline text-sm"
-                            >
+                            <span>
+                                {seller.storeName} (user id: {seller.userId})
+                                {!seller.isActive && <span className="text-red-500 text-sm ml-2">(Inactive)</span>}
+                            </span>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => handleToggleActive(seller.id, seller.isActive)}
+                                    className="text-blue-600 hover:underline text-sm"
+                                >
+                                    {seller.isActive ? "Deactivate" : "Activate"}
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteSeller(seller.id)}
+                                    className="text-red-600 hover:underline text-sm"
+                                >
                                 Delete
-                            </button>
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

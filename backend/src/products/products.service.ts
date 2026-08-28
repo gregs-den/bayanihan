@@ -60,6 +60,8 @@ export class ProductsService {
         if (sellerId) {
             where.sellerId = sellerId;
         }
+        
+        where.seller = { isActive: true};
 
         const products = await this.prisma.product.findMany({
             where,

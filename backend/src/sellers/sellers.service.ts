@@ -85,4 +85,13 @@ export class SellersService {
             throw error;
         }
     }
+
+    async toggleActive(id: number, isActive: boolean) {
+        await this.findOne(id);
+
+        return this.prisma.seller.update({
+            where: { id },
+            data: { isActive },
+        });
+    }
 }

@@ -30,6 +30,7 @@ model User {
   userId            Int         @unique
   user              User        @relation(fields: [userId], references: [id])
   storeName         String
+  isActive          Boolean     @default(true)
   products          Product[]
   orderItems        OrderItem[]
   createdAt         DateTime    @default(now())

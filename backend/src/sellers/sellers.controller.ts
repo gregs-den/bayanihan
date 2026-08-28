@@ -19,6 +19,12 @@ export class SellersController {
         return this.sellersService.findAll();
     }
 
+    @UseGuards(AdminGuard)
+    @Patch('admin/:id/toggle-active')
+    toggleActive(@Param('id') id: string, @Body() body: { isActive: boolean }) {
+        return this.sellersService.toggleActive(Number(id), body.isActive);
+    }
+
     @Get(':id')
     findOne(@Param('id') id: string) {
         return this.sellersService.findOne(Number(id));
