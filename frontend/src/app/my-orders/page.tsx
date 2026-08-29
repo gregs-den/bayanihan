@@ -10,7 +10,11 @@ type OrderItem = {
     quantity: number;
     priceAtPurchase: string;
     status: string;
-}
+    seller: {
+        storeName: string;
+        isActive: boolean;
+    };
+};
 
 type Order = {
     id: number;
@@ -80,9 +84,16 @@ export default function MyOrdersPage() {
                             
                             <div className="flex flex-col gap-1 mt-2 border-t pt-2">
                                 {order.orderItems.map((item) => (
-                                    <div key={item.id} className="flex justify-between text-sm">
-                                        <span>Item #{item.productId} * {item.quantity}</span>
-                                        <span className="capitalize text-gray-600">{item.status}</span>
+                                    <div key={item.id} className="flex flex-col text-sm mb-1">
+                                        <div className="flex justify-between">
+                                            <span>Item #{item.productId} * {item.quantity}</span>
+                                            <span className="capitalize text-gray-600">{item.status}</span>
+                                        </div>
+                                        {!item.seller.isActive && item.status === "pending" && (
+                                            <span className="text-amber-600 text-xs">
+                                                ⚠ This seller ({item.seller.storeName}) is currently inactive. Your order may be delayed.
+                                            </span>
+                                        )}
                                     </div>
                                 ))}
                             </div>

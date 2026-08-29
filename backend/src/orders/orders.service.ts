@@ -101,8 +101,18 @@ export class OrdersService {
     async findMyOrders(buyerId: number) {
         return this.prisma.order.findMany({
             where: { buyerId },
-            include: { orderItems: true },
-            orderBy: { createdAt: 'desc'},
+            include: { orderItems: {
+                include: {
+                    seller: {
+                        select: {
+                            storeName: true,
+                            isActive: true,
+                        },
+                    },
+                },
+            },
+        },
+        orderBy: { createdAt: 'desc'},
         });
     }
 
