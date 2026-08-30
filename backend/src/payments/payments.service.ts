@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { metadata } from 'reflect-metadata/no-conflict';
 import * as crypto from 'crypto';
@@ -21,6 +21,12 @@ export class PaymentsService {
 
             if (!product) {
                 throw new NotFoundException(`Product ${item.productId} not found`);
+            }
+
+            if (product.stock < item.quantity) {
+                throw new BadRequestException(
+                    `Insufficient stock for "${product.name}". Only ${product.stock} available.`,
+                );
             }
 
             const price = Number(product.price);

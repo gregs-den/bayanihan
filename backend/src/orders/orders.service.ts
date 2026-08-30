@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 const COMMISSION_RATE = 0.1; // 10% commission rate
@@ -26,6 +26,12 @@ export class OrdersService {
 
       if (!product) {
         throw new NotFoundException(`Product ${item.productId} not found`);
+      }
+
+      if (product.stock < item.quantity) {
+        throw new BadRequestException(
+            `Insufficient stock for "${product.name}". Only ${product.stock} available.`,
+        );
       }
 
       const price = Number(product.price);
@@ -58,6 +64,13 @@ export class OrdersService {
                         orderId: order.id,
                         ...itemData,
                         createdAt: new Date(),
+                    },
+                });
+
+                await tx.product.update({
+                    where: { id: itemData.productId },
+                    data: {
+                        stock: { decrement: itemData.quantity },
                     },
                 });
             }

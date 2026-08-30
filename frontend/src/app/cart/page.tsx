@@ -73,7 +73,7 @@ export default function CartPage() {
 
         if (!res.ok) {
             const data = await res.json();
-            setError(data.message?.[0] || data.message || "Checkout failed");
+            setError(data.message || "Checkout failed");
             return;
         }
 
