@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { API_URL } from "../lib/api";
 import { isAdminFromToken } from "../lib/auth";
+import { formatPrice } from "../lib/format";
 
 type User = {
     id: number;
@@ -23,6 +24,33 @@ type Seller = {
     isActive: boolean;
 };
 
+type AdminProduct = {
+    id: number;
+    name: string;
+    price: string;
+    stock: number;
+    seller: {
+        storeName: string;
+        isActive: boolean;
+    };
+};
+
+type AdminOrderItem = {
+    id: number;
+    quantity: number;
+    priceAtPurchase: string;
+    seller: { storeName: string };
+}
+
+type AdminOrder = {
+    id: number;
+    totalAmount: string;
+    status: string;
+    createdAt: string;
+    buyer: { email: string };
+    orderItems: AdminOrderItem[];
+};
+
 export default function AdminPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
@@ -30,6 +58,11 @@ export default function AdminPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [newCategoryName, setNewCategoryName] = useState("");
     const [sellers, setSellers] = useState<Seller[]>([]);
+    const [userSearch, setUserSearch] = useState("");
+    const [adminProducts, setAdminProducts] = useState<AdminProduct[]>([]);
+    const [productSearch, setProductSearch] = useState("");
+    const [adminOrders, setAdminOrders] = useState<AdminOrder[]>([]);
+    const [orderSearch, setOrderSearch] = useState("");
 
     useEffect(() => {
         async function loadUsers() {
@@ -68,9 +101,33 @@ export default function AdminPage() {
             setSellers(data);
         }
 
+        async function loadAdminProducts() {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${API_URL}/products/admin/all`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await res.json();
+            setAdminProducts(data);
+        }
+
+        async function loadAdminOrders() {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${API_URL}/orders/admin/all`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = await res.json();
+            setAdminOrders(data);
+        }
+
         loadUsers();
         loadCategories();
         loadSellers();
+        loadAdminProducts();
+        loadAdminOrders();
     }, []);
 
     async function handleCreateCategory(e: React.FormEvent) {
@@ -204,6 +261,14 @@ export default function AdminPage() {
     return (
         <main className="min-h-screen p-8 max-w-3xl mx-auto">
             <h1 className="text-3xl font-bold mb-6">Admin: All Users</h1>
+            
+            <input 
+                type="text"
+                placeholder="Search users by email"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="border rounded p-2 mb-3 w-full max-w-sm"
+            />
 
             <table className="w-full border-collapse">
                 <thead>
@@ -216,28 +281,30 @@ export default function AdminPage() {
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id} className="border-b">
-                            <td className="p-2">{user.id}</td>
-                            <td className="p-2">{user.email}</td>
-                            <td className="p-2">{user.isAdmin ? "Yes" : "No"}</td>
-                            <td className="p-2">{new Date(user.createdAt).toLocaleDateString()}</td>
-                            <td className="p-2 flex gap-3">
-                                <button
-                                    onClick={() => handleToggleAdmin(user.id, user.isAdmin)}
-                                    className="text-blue-600 hover:underline text-sm"
-                                >
-                                    {user.isAdmin ? "Demote" : "Promote"}
-                                </button>
-                                <button
-                                    onClick={() => handleDeleteUser(user.id)}
-                                    className="text-red-600 hover:underline text-sm"
-                                >
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
+                    {users
+                        .filter((u) => u.email.toLowerCase().includes(userSearch.toLowerCase()))
+                        .map((user) => (
+                            <tr key={user.id} className="border-b">
+                                <td className="p-2">{user.id}</td>
+                                <td className="p-2">{user.email}</td>
+                                <td className="p-2">{user.isAdmin ? "Yes" : "No"}</td>
+                                <td className="p-2">{new Date(user.createdAt).toLocaleDateString()}</td>
+                                <td className="p-2 flex gap-3">
+                                    <button
+                                        onClick={() => handleToggleAdmin(user.id, user.isAdmin)}
+                                        className="text-blue-600 hover:underline text-sm"
+                                    >
+                                        {user.isAdmin ? "Demote" : "Promote"}
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteUser(user.id)}
+                                        className="text-red-600 hover:underline text-sm"
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
                 </tbody>
             </table>
 
@@ -296,7 +363,73 @@ export default function AdminPage() {
                         </div>
                     ))}
                 </div>
-                
+
+            <h2 className="text-2xl font-bold mt-10 mb-4">Manage Products</h2>
+            <input 
+                type="text"
+                placeholder="Search products by name..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                className="border rounded p-2 mb-3 w-full max-w-sm"
+            />
+
+            <div className="flex flex-col gap-2">
+                {adminProducts
+                    .filter((p) => p.name.toLowerCase().includes(productSearch.toLowerCase()))
+                    .map((product) => (
+                        <div key={product.id} className="flex justify-between items-center border rounded p-2">
+                            <span>
+                                {product.name} - ₱{formatPrice(product.price)} (Stock: {product.stock})
+                                <span className="text-gray-500 text-sm ml-2">
+                                    by {product.seller.storeName}
+                                    {!product.seller.isActive && (
+                                        <span className="text-red-500 ml-1">(seller inactive)</span>
+                                    )}
+                                </span>
+                            </span>
+                        </div>
+                    ))}
+            </div>
+
+            <h2 className="text-2xl font-bold mt-10 mb-4">Manage Orders</h2>
+            <input
+                type="text"
+                placeholder="Search by order ID or buyer email..."
+                value={orderSearch}
+                onChange={(e) => setOrderSearch(e.target.value)}
+                className="border rounded p-2 mb-3 w-full max-w-sm"
+            />
+
+            <div className="flex flex-col gap-3">
+                {adminOrders
+                    .filter((o) =>
+                        o.id.toString().includes(orderSearch) ||
+                        o.buyer.email.toLowerCase().includes(orderSearch.toLowerCase())
+                    )
+                    .map((order) => (
+                        <div key={order.id} className="border rounded p-3">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="font-semibold">
+                                    Order #{order.id} - {order.buyer.email}
+                                </span>
+                                <span className="text-sm px-2 py-1 rounded bg-gray-100 capitalize">
+                                    {order.status}
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-500 mb-1">
+                                {new Date(order.createdAt).toLocaleString()}
+                            </p>
+                            <p className="font-bold mb-1">Total: ₱{formatPrice(order.totalAmount)}</p>
+                            <div className="text-sm text-gray-600">
+                                {order.orderItems.map((item) => (
+                                    <div key={item.id}>
+                                        {item.quantity} x ₱{formatPrice(item.priceAtPurchase)} - sold by {item.seller.storeName}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+            </div>
         </main>
     );
 }

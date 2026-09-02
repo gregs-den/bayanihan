@@ -167,4 +167,22 @@ export class OrdersService {
             data: { status },
         });
     }
+
+    async findAllAdmin() {
+        return this.prisma.order.findMany({
+            include: {
+                buyer: {
+                    select: { email: true },
+                },
+                orderItems: {
+                    include: {
+                        seller: {
+                            select: { storeName: true },
+                        },
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
 }

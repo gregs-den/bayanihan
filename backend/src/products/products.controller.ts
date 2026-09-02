@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Delete, Param, UseGuards, Req, Quer
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { request } from 'http';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('products')
 export class ProductsController {
@@ -26,6 +26,12 @@ export class ProductsController {
       sellerId ? Number(sellerId) : undefined,
       sortBy,
     );
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('admin/all')
+  findAllAdmin(@Query('search') search?: string) {
+    return this.productsService.findAllAdmin(search);
   }
 
   @Get(':id')

@@ -141,4 +141,28 @@ export class ProductsService {
             where: { id },
         });
     }
+
+    async findAllAdmin(search?: string) {
+        const where: any = {};
+
+        if (search) {
+            where.name = {
+                contains: search,
+                mode: 'insensitive',
+            };
+        }
+
+        return this.prisma.product.findMany({
+            where,
+            include: {
+                seller: {
+                    select: {
+                        storeName: true,
+                        isActive: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }     
 }

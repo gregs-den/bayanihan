@@ -1,8 +1,8 @@
 import { Controller, Post, Body, Get, Patch, Param, UseGuards, Req } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { request } from 'http';
+import { AuthGuard } from '../auth/auth.guard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('orders')
 export class OrdersController {
@@ -23,6 +23,12 @@ export class OrdersController {
   @Get('seller/items')
   findSellerOrderItems(@Req() request: any) {
     return this.ordersService.findSellerOrderItems(request.userId);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('admin/all')
+  findAllAdmin() {
+    return this.ordersService.findAllAdmin();
   }
 
   @UseGuards(AuthGuard)
