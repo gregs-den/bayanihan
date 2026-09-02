@@ -18,11 +18,13 @@ export class ProductsController {
     @Query('search') search?: string, 
     @Query('categoryId') categoryId?: string,
     @Query('sellerId') sellerId?: string,
+    @Query('sortBy') sortBy?: string,
   ) {
     return this.productsService.findAll(
       search, 
       categoryId ? Number(categoryId) : undefined,
       sellerId ? Number(sellerId) : undefined,
+      sortBy,
     );
   }
 

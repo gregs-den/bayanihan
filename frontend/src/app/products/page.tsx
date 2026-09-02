@@ -33,6 +33,7 @@ export default function ProductsPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [search, setSearch] = useState("");
     const [categoryId, setCategoryId] = useState("");
+    const [sortBy, setSortBy] = useState("");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -45,21 +46,33 @@ export default function ProductsPage() {
 }, []);
 
     useEffect(() => {
+        const controller = new AbortController();
+
         async function loadProducts() {
             setLoading(true);
             const params = new URLSearchParams();
             if (search) params.set("search", search);
             if (categoryId) params.set("categoryId", categoryId);
+            if (sortBy) params.set("sortBy", sortBy);
 
-    const res = await fetch(`${API_URL}/products?${params.toString()}`, {
-        cache: "no-store",
-    });
-    const data = await res.json();
-        setProducts(data);
-        setLoading(false);
-    }
-    loadProducts();
-}, [search, categoryId]);
+            try {
+                const res = await fetch(`${API_URL}/products?${params.toString()}`, {
+                cache: "no-store",
+                signal: controller.signal
+                });
+                const data = await res.json();
+                setProducts(data);
+                setLoading(false);
+            } catch (err: any) {
+                if (err.name !== "AbortError") {
+                    setLoading(false);
+                }
+            }
+        }
+        loadProducts();
+
+        return () => controller.abort();
+    }, [search, categoryId, sortBy]);
 
     return (
         <main className="min-h-screen p-8">
@@ -84,6 +97,16 @@ export default function ProductsPage() {
                             {cat.name}
                         </option>
                     ))}
+                </select>
+                <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="border rounded p-2"
+                >
+                    <option value="">Sort by</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
                 </select>
             </div>
             

@@ -43,7 +43,7 @@ export class ProductsService {
         });
     }
 
-    async findAll(search?: string, categoryId?: number, sellerId?: number) {
+    async findAll(search?: string, categoryId?: number, sellerId?: number, sortBy?: string) {
         const where: any = {};
 
         if (search) {
@@ -68,7 +68,7 @@ export class ProductsService {
             include: { reviews: true },
         });
 
-        return products.map((product) => {
+        const mapped = products.map((product) => {
             const ratings = product.reviews.map((r) => r.rating);
             const averageRating =
                 ratings.length > 0
@@ -78,6 +78,16 @@ export class ProductsService {
             const { reviews, ...rest } = product;
             return { ...rest, averageRating, reviewCount: ratings.length };
         });        
+
+        if (sortBy === 'price_asc') {
+            mapped.sort((a, b) => Number(a.price) - Number(b.price));
+        } else if (sortBy === 'price_desc') {
+            mapped.sort((a, b) => Number(b.price) - Number(a.price));
+        } else if (sortBy === 'rating') {
+            mapped.sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
+        }
+
+        return mapped;
     }
 
     async findOne(id: number) {
