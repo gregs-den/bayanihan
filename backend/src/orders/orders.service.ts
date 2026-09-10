@@ -1,11 +1,15 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from 'src/email/email.service';
 
 const COMMISSION_RATE = 0.1; // 10% commission rate
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+    ) {}
 
   async createOrder(buyerId: number, items: {productId: number; quantity: number}[]) {
     // Step 1: look each product to get price + sellerId
@@ -49,8 +53,8 @@ export class OrdersService {
         });
     }
 
-    return this.prisma.$transaction(async (tx) => {
-        const order = await tx.order.create({
+    const order = await this.prisma.$transaction(async (tx) => {
+        const newOrder = await tx.order.create({
             data: {
                 buyerId,
                 totalAmount,
@@ -58,26 +62,37 @@ export class OrdersService {
              },
         });
              
-             for (const itemData of orderItemsData) {
-                await tx.orderItem.create({
-                    data: {
-                        orderId: order.id,
-                        ...itemData,
-                        createdAt: new Date(),
-                    },
-                });
+        for (const itemData of orderItemsData) {
+            await tx.orderItem.create({
+                data: {
+                    orderId: newOrder.id,
+                    ...itemData,
+                    createdAt: new Date(),
+                },
+            });
+            
+            await tx.product.update({
+                where: { id: itemData.productId },
+                data: {
+                    stock: { decrement: itemData.quantity },
+                },
+            });
+        }
 
-                await tx.product.update({
-                    where: { id: itemData.productId },
-                    data: {
-                        stock: { decrement: itemData.quantity },
-                    },
-                });
-            }
+        return newOrder;
+    });
+    
+    const buyer = await this.prisma.user.findUnique({
+        where: { id: buyerId },
+        select: { email: true },
+    });
 
-            return order;
-        });
+    if (buyer) {
+        await this.emailService.sendOrderConfirmation(buyer.email, order.id, totalAmount);
     }
+
+    return order;        
+}
 
     async findOne(id: number, requestingUserId: number) {
         const order = await this.findOrderOrThrow(id);
@@ -151,7 +166,17 @@ export class OrdersService {
     async updateOrderItemStatus(itemId: number, status: string, requestingUserId: number) {
         const item = await this.prisma.orderItem.findUnique({
             where: { id: itemId },
-            include: { seller: true },
+            include: { 
+                seller: true,
+                product: true,
+                order: {
+                    include: {
+                        buyer: {
+                            select: { email: true },
+                        },
+                    },
+                },
+            },
         });
 
         if (!item) {
@@ -162,10 +187,19 @@ export class OrdersService {
             throw new ForbiddenException('You can only update your own order items');
         }
 
-        return this.prisma.orderItem.update({
+        const updateItem = await this.prisma.orderItem.update({
             where: { id: itemId },
             data: { status },
         });
+
+        await this.emailService.sendStatusUpdate(
+            item.order.buyer.email,
+            item.orderId,
+            item.product.name,
+            status,
+        );
+
+        return updateItem;
     }
 
     async findAllAdmin() {
