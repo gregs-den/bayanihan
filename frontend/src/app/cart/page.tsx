@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCart, removeFromCart, clearCart, CartItem } from "../lib/cart";
+import { getCart, removeFromCart, clearCart, saveCart, CartItem } from "../lib/cart";
 import { getUserIdFromToken } from "../lib/auth";
 import { formatPrice } from "../lib/format";
 import { API_URL } from "../lib/api";
@@ -26,15 +26,22 @@ export default function CartPage() {
         async function loadCart() {
             const cart = getCart();
 
-            const lines: CartLine[] = await Promise.all(
+            const lines = await Promise.all(
                 cart.map(async (item) => {
                     const res = await fetch(`${API_URL}/products/${item.productId}`);
+                    if (!res.ok) return null;
                     const product = await res.json();
                     return { ...item, product };
                 })
             );
 
-            setCartLines(lines);
+            const validLines = lines.filter((line): line is CartLine => line !== null);
+
+            if (validLines.length !== cart.length) {
+                saveCart(validLines.map((l) => ({ productId: l.productId, quantity: l.quantity })));
+            }
+
+            setCartLines(validLines);
             setLoading(false);            
         }
 
