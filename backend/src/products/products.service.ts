@@ -43,7 +43,7 @@ export class ProductsService {
         });
     }
 
-    async findAll(search?: string, categoryId?: number, sellerId?: number, sortBy?: string) {
+    async findAll(search?: string, categoryId?: number, sellerId?: number, sortBy?: string, page:number = 1, limit: number = 12) {
         const where: any = {};
 
         if (search) {
@@ -87,7 +87,12 @@ export class ProductsService {
             mapped.sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
         }
 
-        return mapped;
+        const total = mapped.length;
+        const totalPages = Math.ceil(total / limit);
+        const start = (page - 1) * limit;
+        const paginated = mapped.slice(start, start + limit);
+
+        return { products: paginated, total, page, totalPages };
     }
 
     async findOne(id: number) {

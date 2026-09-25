@@ -39,4 +39,22 @@ export class EmailService {
             console.error('Failed to send status update email:', error);
         }
     }
+
+    async sendPasswordReset(toEmail: string, resetUrl: string) {
+        try {
+            await this.resend.emails.send({
+                from: 'Bayanihan <onboarding@resend.dev>',
+                to: toEmail,
+                subject: 'Reset Your Password',
+                html: `
+                    <h1>Password Reset Request</h1>
+                    <p>Click the link below to reset your password:</p>
+                    <p><a href="${resetUrl}">${resetUrl}</a></p>
+                    <p>If you didn't request this, you can safely ignore this email.</p>
+                    `,
+            });            
+        } catch (error) {
+            console.error('Failed to send password reset email:', error);
+        }
+    }
 }

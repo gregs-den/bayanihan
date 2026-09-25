@@ -2,12 +2,15 @@ import { Injectable, UnauthorizedException, NotFoundException, ForbiddenExceptio
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import * as crypto from 'crypto';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class UsersService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly jwtService: JwtService,
+        private readonly emailService: EmailService,
     ) {}
 
     async login(email: string, password: string) {
@@ -137,5 +140,53 @@ export class UsersService {
                 createdAt: true,
             },
         });
+    }
+
+    async forgotPassword(email: string) {
+        const user = await this.prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            return { message: 'If that email exists, a reset link has been sent.' };
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
+
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: { resetToken, resetTokenExpiry },
+        });
+
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+        await this.emailService.sendPasswordReset(user.email, resetUrl);
+
+        return { message: 'If that email exists, a reset link has been sent.' };
+    }
+
+    async resetPassword(token: string, newPassword: string) {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                resetToken: token,
+                resetTokenExpiry: { gt: new Date() },
+            },
+        });
+
+        if (!user) {
+            throw new BadRequestException('Invalid or expired reset token.');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                resetToken: null,
+                resetTokenExpiry: null,
+            },
+        });
+
+        return { message: 'Password reset successfully.' };
     }
 }

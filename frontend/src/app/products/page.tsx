@@ -35,6 +35,8 @@ export default function ProductsPage() {
     const [categoryId, setCategoryId] = useState("");
     const [sortBy, setSortBy] = useState("");
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         async function loadCategories() {
@@ -46,7 +48,11 @@ export default function ProductsPage() {
 }, []);
 
     useEffect(() => {
-        const controller = new AbortController();
+        setPage(1);
+    }, [search, categoryId, sortBy]);
+
+    useEffect(() => {
+        const controller = new AbortController();  
 
         async function loadProducts() {
             setLoading(true);
@@ -54,6 +60,8 @@ export default function ProductsPage() {
             if (search) params.set("search", search);
             if (categoryId) params.set("categoryId", categoryId);
             if (sortBy) params.set("sortBy", sortBy);
+            params.set("page", page.toString());
+            params.set("limit", "12");
 
             try {
                 const res = await fetch(`${API_URL}/products?${params.toString()}`, {
@@ -61,7 +69,8 @@ export default function ProductsPage() {
                 signal: controller.signal
                 });
                 const data = await res.json();
-                setProducts(data);
+                setProducts(data.products);
+                setTotalPages(data.totalPages);
                 setLoading(false);
             } catch (err: any) {
                 if (err.name !== "AbortError") {
@@ -72,7 +81,7 @@ export default function ProductsPage() {
         loadProducts();
 
         return () => controller.abort();
-    }, [search, categoryId, sortBy]);
+    }, [search, categoryId, sortBy, page]);
 
     return (
         <main className="min-h-screen p-8">
@@ -144,6 +153,27 @@ export default function ProductsPage() {
                     </div>
                 ))}
             </div>
+            )}
+            {!loading && products.length > 0 && (
+                <div className="flex justify-center items-center gap-4 mt-8">
+                    <button
+                        onClick={() => setPage((p) => Math.max(1, p -1))}
+                        disabled={page === 1}
+                        className="border rounded px-4 py-2 disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+                    <span>
+                        Page {page} of {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        className="border rounded px-4 py-2 disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
             )}
         </main>
     );

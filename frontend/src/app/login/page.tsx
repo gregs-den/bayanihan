@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "../lib/api";
+import Link from "next/link";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -56,6 +57,9 @@ export default function LoginPage() {
                 <button type="submit" className="bg-black text-white rounded p-2">
                     Login
                 </button>
+                <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline text-center">
+                    Forgot Password?
+                </Link>
             </form>
         </main>
     );

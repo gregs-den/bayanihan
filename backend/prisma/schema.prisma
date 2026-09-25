@@ -19,6 +19,8 @@ model User {
   email             String      @unique
   password          String
   isAdmin           Boolean     @default(false)
+  resetToken        String?
+  resetTokenExpiry  DateTime?
   seller            Seller?
   orders            Order[]
   reviews           Review[]

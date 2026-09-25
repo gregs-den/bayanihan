@@ -19,12 +19,16 @@ export class ProductsController {
     @Query('categoryId') categoryId?: string,
     @Query('sellerId') sellerId?: string,
     @Query('sortBy') sortBy?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     return this.productsService.findAll(
       search, 
       categoryId ? Number(categoryId) : undefined,
       sellerId ? Number(sellerId) : undefined,
       sortBy,
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 12,
     );
   }
 
